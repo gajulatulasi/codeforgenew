@@ -3,29 +3,52 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || 'codeforge',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASSWORD || '',
-  {
-    host: process.env.DB_HOST || 'localhost',
-    dialect: 'mysql',
-    logging: false, // Set to true to see SQL queries in console
+let sequelize;
+
+if (process.env.DATABASE_URL) {
+  // Connection string (e.g. Render production PostgreSQL)
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false // Required for connecting to Render PostgreSQL from outside/internally
+      }
+    },
     pool: {
-      max: 150,      // Maximum number of connection in pool
-      min: 20,       // Minimum number of connection in pool
-      acquire: 60000, // Maximum time (ms) to wait for connection before throwing error
-      idle: 10000    // Maximum time (ms) that a connection can be idle before being released
+      max: 150,
+      min: 20,
+      acquire: 60000,
+      idle: 10000
     }
-  }
-);
+  });
+} else {
+  // Individual config parameters (typically for local development)
+  sequelize = new Sequelize(
+    process.env.DB_NAME || 'codeforge',
+    process.env.DB_USER || 'postgres',
+    process.env.DB_PASSWORD || '',
+    {
+      host: process.env.DB_HOST || '127.0.0.1',
+      dialect: 'postgres',
+      logging: false,
+      pool: {
+        max: 150,
+        min: 20,
+        acquire: 60000,
+        idle: 10000
+      }
+    }
+  );
+}
 
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('Connected to MySQL via Sequelize');
+    console.log('Connected to PostgreSQL via Sequelize');
   } catch (error) {
-    console.error('MySQL connection error:', error);
+    console.error('PostgreSQL connection error:', error);
   }
 };
 

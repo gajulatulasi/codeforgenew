@@ -17,8 +17,8 @@ if (process.env.DATABASE_URL) {
       }
     },
     pool: {
-      max: 150,
-      min: 20,
+      max: 20,
+      min: 0,
       acquire: 60000,
       idle: 10000
     }
@@ -34,8 +34,8 @@ if (process.env.DATABASE_URL) {
       dialect: 'postgres',
       logging: false,
       pool: {
-        max: 150,
-        min: 20,
+        max: 20,
+        min: 0,
         acquire: 60000,
         idle: 10000
       }
@@ -48,7 +48,8 @@ const connectDB = async () => {
     await sequelize.authenticate();
     console.log('Connected to PostgreSQL via Sequelize');
   } catch (error) {
-    console.error('PostgreSQL connection error:', error);
+    console.error('PostgreSQL connection error:', error.message);
+    throw error;
   }
 };
 
